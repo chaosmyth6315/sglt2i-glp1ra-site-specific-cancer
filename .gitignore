@@ -1,0 +1,14 @@
+# TriNetX exports and anything derived from them stay out of the repository
+data/
+exports/
+output/
+*.csv
+*.xlsx
+*.docx
+*.png
+*.tiff
+*.pdf
+*.drawio
+__pycache__/
+.DS_Store
+Rplots.pdf
