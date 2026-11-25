@@ -6,7 +6,7 @@
 # Style: exposure (SGLT2i) red solid line with a pink 95% CI band; comparator (GLP-1 RA)
 #   black dashed line with a light-blue band; bands are drawn under the lines. The same y axis is
 #   used on every panel. x axis from year 1 (start of the outcome window) to year 10.
-#   Number-at-risk table under each panel. Arial, 600 dpi.
+#   Table of the estimated number at risk under each panel. Arial, 600 dpi.
 # Layout: 2 columns at print size (178 mm wide); numbers at risk every 2 years (2–10) in black
 #   at 7 pt; one shared legend; x title on the bottom row, y title on the left column.
 #   The BUILD environment variable selects '3', 'S3' or both (default both).
@@ -69,7 +69,7 @@ km_panel <- function(m, last = TRUE, left = TRUE){
     geom_text(size = pt(7), family = "Arial") +
     scale_x_continuous(limits = c(0.55, 10.45), breaks = RISK_YEARS, expand = c(0, 0)) +
     coord_cartesian(clip = "off") +
-    labs(x = NULL, y = NULL, title = "Number at risk") +
+    labs(x = NULL, y = NULL, title = "Estimated number at risk") +
     theme_void(base_family = "Arial", base_size = 8) +
     theme(axis.text.y = element_text(size = 7.5, hjust = 1, colour = "black", margin = margin(r = 4)),
           plot.title = element_text(size = 7.5, hjust = 0, margin = margin(b = 2)),
@@ -93,7 +93,8 @@ compose3 <- function(ms, file, width, height = 6.6, kmtbl = c(4, 1)){
 BUILD <- Sys.getenv("BUILD", "3,S3")
 if (grepl("(^|,)3($|,)", BUILD)) { compose3(man[man$figure == "3", ], "Figure 3_KM.png", 7.0); cat("fig3 OK\n") }
 if (grepl("S3", BUILD)) {
-  # Figure S3 uses the Figure 3 layout (2 columns, 178 mm, at risk every 2 years, shared legend)
-  compose3(man[man$figure == "S3", ], "Figure S3_KM other outcomes.png", 7.0, 8.8, kmtbl = c(3, 1))
+  # Figure S3 uses the Figure 3 layout (2 columns, at risk every 2 years, shared legend), drawn at
+  # 6.53 x 8.2 in, close to its printed size, so that 7-pt text prints at 7 pt or larger
+  compose3(man[man$figure == "S3", ], "Figure S3_KM other outcomes.png", 6.53, 8.2, kmtbl = c(3, 1))
   cat("s3 OK\n")
 }

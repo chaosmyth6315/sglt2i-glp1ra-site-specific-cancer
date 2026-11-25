@@ -20,9 +20,14 @@ Expected layout of the exports (one folder per analysis, each holding the platfo
   Figure1_AnalyzeCriteria/                                         Criteria Analysis exports (Figure 1)
 <subgroup export root>/
   Sub_<cohort>_<stratum>/                                          separately matched subgroup analyses
+<sensitivity export root>/
+  Landmark_Female_Breast/  Landmark_Male/                          landmark analyses
+  Cal2013-2018_<cohort>/  Cal2019-2024_<cohort>/                   index dates restricted by calendar period
+  PreIdx_Female/  PreIdx_Male/                                     encounter and diagnosis before the index date
+  PSA_Male/                                                        PSA testing in men
 ```
 
-`<cohort>` is `Full`, `F` (women) or `M` (men).
+`<cohort>` is `Full`, `F` (women) or `M` (men) for the subgroup analyses; the folder names expected for the sensitivity analyses are listed at the top of `stats_sensitivity_pooled.py`.
 
 ## Requirements
 
@@ -36,7 +41,7 @@ Tested with Python 3.14, matplotlib 3.10.8, R 4.4.2, forestploter 1.1.2, ggplot2
 ## Running
 
 ```bash
-./run_all.sh <primary export root> <subgroup export root> <out dir>
+./run_all.sh <primary export root> <subgroup export root> <sensitivity export root> <out dir>
 ```
 
 This writes the figure data (`.csv`), the Figure 1 draw.io file, the figures (`.png`, 600 dpi) and text logs of the statistics quoted in the text. The published figures are these images with the white margin trimmed. Each script can also be run on its own from the `code/` folder with `PYTHONPATH=.`; its usage line is at the top of the file.
@@ -48,14 +53,15 @@ Each script is named after what it produces. `figure*` scripts build the numbere
 | Script | Produces |
 |---|---|
 | `figure1_flowchart.py` | Figure 1, cohort flow chart (draw.io) |
-| `figure2_data.py`, `figure2_forest.R` | Figure 2, site-specific hazard ratios |
-| `figure3_s3_km_data.py`, `figure3_s3_km.R` | Figure 3 and Figure S3, Kaplan–Meier curves with numbers at risk |
+| `figure2_data.py`, `figure2_forest.R` | Figure 2, site-specific hazard ratios with the landmark estimates |
+| `figure3_s3_km_data.py`, `figure3_s3_km.R` | Figure 3 and Figure S3, Kaplan–Meier curves with estimated numbers at risk |
 | `figure4_s4_s8_subgroup_data.py`, `figure4_subgroup_forest.R`, `figure_s4_s8_subgroup_forest.R` | Figure 4 and Figures S4 to S8, subgroup analyses with P for interaction |
 | `figure_s1_love_plot.py` | Figure S1, standardized mean differences before and after matching |
 | `figure_s2_followup.py` | Figure S2, distribution of follow-up time |
 | `stats_pvalues_bh_cochran.py` | Wald p values, Benjamini–Hochberg q values and Cochran's Q across the 12 sites; deaths by arm |
 | `stats_subgroup_interaction.py` | Subgroup hazard ratios with P for interaction (also used for Figure 4) |
 | `stats_absolute_risk.py` | Absolute risks in the four primary analyses |
+| `stats_sensitivity_pooled.py` | Landmark estimates (also the Figure 2 column), calendar-stratified estimates, the analysis requiring an encounter and a diabetes diagnosis before the index date, and PSA testing in men; women and men, or the two calendar periods, combined by fixed-effect inverse-variance pooling |
 | `lib_trinetx_export.py` | Reader for the TriNetX "Export All" folders |
 | `lib_km_number_at_risk.py` | Numbers at risk recovered from the Kaplan–Meier exports |
 

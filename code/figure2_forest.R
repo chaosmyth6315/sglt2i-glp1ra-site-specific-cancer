@@ -7,12 +7,15 @@
 #   p = Cox Wald p (from HR and 95% CI); q = Benjamini–Hochberg across the
 #   12 sites; † = proportional-hazards violation (Schoenfeld p < 0.05);
 #   CIR % = 100 × (1 − KM survival) at day 3,650; E-value from unrounded HR/CI.
-# Layout: print size (at most 178 mm wide, 8 pt Arial), log x axis 0.7–1.4,
+# Layout: print size (at most 178 mm wide, Arial), log x axis 0.7–1.4,
 #   dashed reference line at 1, 'SGLT2i versus GLP-1 RA' title row, cohort
 #   rows as '<cohort> (<n> matched pairs)', three-line rules, † set as a
-#   superscript after the HR (95% CI).
+#   superscript after the HR (95% CI). A 'Landmark HR (95% CI)' column gives
+#   the landmark estimate (patients with the outcome before day 365 excluded)
+#   for the sites in FIG2LM, written by stats_sensitivity_pooled.py; other
+#   sites show a dash. 7.5 pt so that the extra column fits in 178 mm.
 # Output: 'Figure 2_Clinical Outcomes.png' (600 dpi) in FIGOUT.
-# Usage: FIGOUT=<dir> FIG2DATA=<csv> Rscript figure2_forest.R
+# Usage: FIGOUT=<dir> FIG2DATA=<csv> FIG2LM=<csv> Rscript figure2_forest.R
 #   (LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8; ragg needs an ASCII output path)
 #################################################################
 library(forestploter); library(grid); library(ragg)
@@ -42,8 +45,11 @@ for (b in blocks) {
 }
 df <- do.call(rbind, rows)
 hdr_rows <- which(df$hdr)
+lm <- read.csv(Sys.getenv("FIG2LM"), stringsAsFactors = FALSE, encoding = "UTF-8")
+df$lm <- ifelse(df$hdr, "", ifelse(df$Outcomes %in% lm$label, lm$lm_s[match(df$Outcomes, lm$label)], "\u2014"))
+stopifnot(sum(df$lm %in% lm$lm_s) == nrow(lm))
 
-wrap_outcome <- function(x, is_sub, width_main = 36, width_sub = 30, indent = "   ") {
+wrap_outcome <- function(x, is_sub, width_main = 28, width_sub = 30, indent = "   ") {
   mapply(function(txt, sub) {
     w <- strwrap(txt, width = if (sub) width_sub else width_main)
     if (sub) w <- paste0(indent, w)
@@ -55,15 +61,16 @@ df$Outcomes <- wrap_outcome(df$Outcomes, !df$hdr)
 df$`SGLT2i\nEvents (CIR, %)` <- df$ev1
 df$`GLP-1 RA\nEvents (CIR, %)` <- df$ev2
 df$`HR (95% CI)` <- df$hrci
+df$`Landmark\nHR (95% CI)` <- df$lm
 df$`p value` <- df$p
 df$`q value` <- df$q
 df$`E-value` <- df$ev
-df$` ` <- paste(rep(" ", 28), collapse = "")
+df$` ` <- paste(rep(" ", 22), collapse = "")
 
 show_cols <- c("Outcomes", "SGLT2i\nEvents (CIR, %)", "GLP-1 RA\nEvents (CIR, %)", " ",
-               "HR (95% CI)", "p value", "q value", "E-value")
+               "HR (95% CI)", "Landmark\nHR (95% CI)", "p value", "q value", "E-value")
 
-tm <- forest_theme(base_size = 8, base_family = "Arial",
+tm <- forest_theme(base_size = 7.5, base_family = "Arial",
   refline_gp = gpar(lwd = 0.75, lty = "dashed", col = "grey35"),
   ci_pch = 15, ci_col = "black", ci_fill = "black", ci_lwd = 0.9, ci_Theight = 0.25,
   arrow_type = "closed", arrow_length = 0.06, arrow_gp = gpar(fontsize = 7.5),

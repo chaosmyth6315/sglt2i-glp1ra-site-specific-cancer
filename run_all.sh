@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 # Rebuild the figure data, figures and the statistics quoted in the text from TriNetX "Export All" folders.
 #
-# usage: ./run_all.sh <primary export root> <subgroup export root> <out dir>
-#   primary export root : Main_Full, Female_Breast, Female_Endo_noHyst, Male, Figure1_AnalyzeCriteria
-#   subgroup export root: Sub_<cohort>_<stratum> analyses (Figure 4, Figures S4 to S8)
+# usage: ./run_all.sh <primary export root> <subgroup export root> <sensitivity export root> <out dir>
+#   primary export root    : Main_Full, Female_Breast, Female_Endo_noHyst, Male, Figure1_AnalyzeCriteria
+#   subgroup export root   : Sub_<cohort>_<stratum> analyses (Figure 4, Figures S4 to S8)
+#   sensitivity export root: landmark, calendar-period, pre-index and PSA analyses (see stats_sensitivity_pooled.py)
 set -euo pipefail
-if [ $# -ne 3 ]; then
-  sed -n '4,6p' "$0"; exit 1
+if [ $# -ne 4 ]; then
+  sed -n '4,7p' "$0"; exit 1
 fi
-P=$(cd "$1" && pwd); SUB=$(cd "$2" && pwd)
-mkdir -p "$3"; O=$(cd "$3" && pwd)
+P=$(cd "$1" && pwd); SUB=$(cd "$2" && pwd); SENS=$(cd "$3" && pwd)
+mkdir -p "$4"; O=$(cd "$4" && pwd)
 mkdir -p "$O/figure_data/km" "$O/figures" "$O/logs"
 cd "$(dirname "$0")/code"
 export PYTHONPATH=.
@@ -24,10 +25,11 @@ python3 figure4_s4_s8_subgroup_data.py "$SUB" "$P" "$O/figure_data/fig4_data.csv
 python3 figure3_s3_km_data.py "$P" "$O/figure_data/km" > "$O/logs/km_data.txt"
 python3 stats_pvalues_bh_cochran.py "$P" > "$O/logs/main_stats.txt"
 python3 stats_absolute_risk.py "$P" > "$O/logs/absolute_risks.txt"
+python3 stats_sensitivity_pooled.py "$SENS" "$O/figure_data/fig2_landmark.csv" > "$O/logs/sensitivity_pooled.txt"
 
 echo "Figures"
 python3 figure1_flowchart.py "$P/Figure1_AnalyzeCriteria" "$P" "$O/figures/Figure 1_flow chart.drawio" >/dev/null
-FIGOUT="$O/figures" FIG2DATA="$O/figure_data/fig2_data.csv" Rscript figure2_forest.R
+FIGOUT="$O/figures" FIG2DATA="$O/figure_data/fig2_data.csv" FIG2LM="$O/figure_data/fig2_landmark.csv" Rscript figure2_forest.R
 FIGOUT="$O/figures" KMDIR="$O/figure_data/km" Rscript figure3_s3_km.R
 FIGOUT="$O/figures" FIG4DATA="$O/figure_data/fig4_data.csv" Rscript figure4_subgroup_forest.R
 FIGOUT="$O/figures" FIG4DATA="$O/figure_data/fig4_data.csv" Rscript figure_s4_s8_subgroup_forest.R
