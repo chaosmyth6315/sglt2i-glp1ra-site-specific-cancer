@@ -74,9 +74,9 @@ def estimate(subs, key):
 
 
 def line(label, b, se, rs):
-    n = sum(r["n"][0] for r in rs)
+    n = tuple(sum(r["n"][i] for r in rs) for i in (0, 1))
     ev = tuple(sum(r["ev"][i] for r in rs) for i in (0, 1))
-    print(f"  {label:42s} {hr_ci(b, se):18s} p {p_txt(b, se):7s} n/arm analysed {n:,}  events S/G {ev[0]:,}/{ev[1]:,}")
+    print(f"  {label:42s} {hr_ci(b, se):18s} p {p_txt(b, se):7s} analysed n S/G {n[0]:,}/{n[1]:,}  events S/G {ev[0]:,}/{ev[1]:,}")
 
 
 SEX = ("Female_Breast", "Male")
